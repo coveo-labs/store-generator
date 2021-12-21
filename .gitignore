@@ -5,7 +5,8 @@
 
 # Node artifact files
 settings.json
-
+.pushapi-config.json
+images/
 node_modules/
 dist/
 .env

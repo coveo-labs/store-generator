@@ -60,5 +60,7 @@ Create a file like the `config.json`. It contains:
 
    # 6. Ready to push the content to your Catalog source
    Use: `python 4_pushToCatalog.py`. 
-   This will create a JSON file which you then push against your Catalog source with: `pushapi catalog` (catalog is your directory were you have placed your output files)
+   This will create a JSON file which you then push against your Catalog source with: `pushapi catalogs` (catalogs is your directory were you have placed your output files)
 
+## Upload your images to s3
+aws s3 sync images s3://fashion-coveodemo-com/images/new --include "*.jpg" --exclude "*.json"
