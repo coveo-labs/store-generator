@@ -35,7 +35,7 @@ Create a file like the `config.json`. It contains:
    * "variant": Is this facet for a Variant
    * "useWhenPropertyValue": Only apply this facet if one of the `cat_properties` (aka `categories` in the original json from AWS) is found
 
-   ### Steps to perform
+   ### Steps to perform (Option 1)
    # 1. Determine the keywords to use for the categories. 
    Check on Pexels.com for proper keywords and example images.
    Put those keywords in your config.json
@@ -61,6 +61,34 @@ Create a file like the `config.json`. It contains:
    # 6. Ready to push the content to your Catalog source
    Use: `python 4_pushToCatalog.py`. 
    This will create a JSON file which you then push against your Catalog source with: `pushapi catalogs` (catalogs is your directory were you have placed your output files)
+
+   ### Steps to perform (Option 2, when you want to use a part of the original picture)
+   # 1. Determine the keywords to use for the categories. 
+   Check on Pexels.com for proper keywords and example images.
+   Put those keywords in your config.json
+
+   # 2. Get the images from Pexels.com
+   Use: `python 1_getAllPexelImages_Large.py`
+
+   # 3. Goto your image directory and remove any images which are:
+   * Not appropiate (Children/Babies/Naked/Weird photos)
+   * Do not belong to the category
+
+   # 4. Assign the base colors and pick alternatives (for grouping)
+   In order to use grouping we need different colors for different products.
+   Use: `python 2_assignColorsAndSelectPart.py`
+   This will open up an image.
+   * Click on the image category item to determine the base color. Your command prompt window will show you the color. This area will also be used as a partial image for the previews.
+   * When the base color is determined the `image HSV` window is opened. Click here on the item color you want to filter on. Look at windows `option1, option2 and option3` if the proper colors were applied.
+   * If you find the colors in one of the option windows appropiate. Simply click on the image -> this will store the window as a 'Child' of the parent.
+
+   # 5. Identify the images using AWS Rekognition
+   Use: `python 2_identifyImagesAWS.py`
+
+   # 6. Ready to push the content to your Catalog source
+   Use: `python 4_pushToCatalog.py`. 
+   This will create a JSON file which you then push against your Catalog source with: `pushapi catalogs` (catalogs is your directory were you have placed your output files)
+
 
 ## Upload your images to s3
 aws s3 sync images s3://fashion-coveodemo-com/images/new --include "*.jpg" --exclude "*.json"

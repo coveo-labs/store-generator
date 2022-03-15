@@ -1,4 +1,5 @@
 {
+  "openaiApiKey":"",
   "pexelsApiKey": "",
   "awsAccessKeyId":"",
   "awsSecretAccessKey":"",

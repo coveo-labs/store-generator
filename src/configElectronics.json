@@ -1,0 +1,330 @@
+{
+  "global": {
+    "fileLocation": "../images/electronics/",
+    "offsetColor": 10,
+    "offsetHSV": 10,
+    "minWidthPhotos": 600,
+    "minNumberOfPhotos": 500,
+    "GetImagesSkipExistingCategories":true,
+    "OpenAISkipExisting":true,
+
+    "AWSSkipExisting":true,
+    "AWSMinConfidence": 80,
+    "AWSMaxConfidence": 90,
+    "UseMaxLabels": true,
+    "forceUniqueImageAllCategories":false,
+    "catalogJsonFile": "catalogs/electronics_catalog.json",
+    "baseUrl":"https://fashion.coveodemo.com/",
+    "baseUrlImages":"https://fashion.coveodemo.com/images/new/"
+  },
+  "categories": [
+    {
+      "searchFor": "macbook",
+      "category": "Laptops",
+      "categoryPath": "Computers|Laptops|MacBook",
+      "useGender": false,
+      "defaultGender": "",
+      "avgPrice": 2000,
+      "retailers": [
+        "retail1",
+        "retail2"
+      ],
+      "facets": [
+        {
+          "name": "Season",
+          "values": "Summer",
+          "default": "Summer",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing"
+        },
+        {
+          "name": "Type",
+          "values": "Sandal",
+          "default": "Sandal",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Sandal"
+        },
+        {
+          "name": "Type",
+          "values": "Flip Flop",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Flip-Flop"
+        },
+        {
+          "name": "Type",
+          "values": "Clogs",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Shoe|Clogs"
+        },
+        
+        {
+          "name": "Size",
+          "values": "S;M;L;XL",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        },
+        {
+          "name": "Size Type",
+          "values": "Slim;Loose;Oversized",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        }
+      ]
+    },
+    {
+      "searchFor": "keyboard",
+      "category": "Keyboards",
+      "categoryPath": "Computers|Accessories|Keyboard",
+      "useGender": false,
+      "defaultGender": "",
+      "avgPrice": 2000,
+      "retailers": [
+        "retail1",
+        "retail2"
+      ],
+      "facets": [
+        {
+          "name": "Season",
+          "values": "Summer",
+          "default": "Summer",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing"
+        },
+        {
+          "name": "Type",
+          "values": "Sandal",
+          "default": "Sandal",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Sandal"
+        },
+        {
+          "name": "Type",
+          "values": "Flip Flop",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Flip-Flop"
+        },
+        {
+          "name": "Type",
+          "values": "Clogs",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Shoe|Clogs"
+        },
+        
+        {
+          "name": "Size",
+          "values": "S;M;L;XL",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        },
+        {
+          "name": "Size Type",
+          "values": "Slim;Loose;Oversized",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        }
+      ]
+    },
+    {
+      "searchFor": "mouse computer",
+      "category": "Mouse",
+      "categoryPath": "Computers|Accessories|Mouse",
+      "useGender": false,
+      "defaultGender": "",
+      "avgPrice": 2000,
+      "retailers": [
+        "retail1",
+        "retail2"
+      ],
+      "facets": [
+        {
+          "name": "Season",
+          "values": "Summer",
+          "default": "Summer",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing"
+        },
+        {
+          "name": "Type",
+          "values": "Sandal",
+          "default": "Sandal",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Sandal"
+        },
+        {
+          "name": "Type",
+          "values": "Flip Flop",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Flip-Flop"
+        },
+        {
+          "name": "Type",
+          "values": "Clogs",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Shoe|Clogs"
+        },
+        
+        {
+          "name": "Size",
+          "values": "S;M;L;XL",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        },
+        {
+          "name": "Size Type",
+          "values": "Slim;Loose;Oversized",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        }
+      ]
+    },
+    {
+      "searchFor": "ipad",
+      "category": "Tablets",
+      "categoryPath": "Computers|Tables|iPad",
+      "useGender": false,
+      "defaultGender": "",
+      "avgPrice": 2000,
+      "retailers": [
+        "retail1",
+        "retail2"
+      ],
+      "facets": [
+        {
+          "name": "Season",
+          "values": "Summer",
+          "default": "Summer",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing"
+        },
+        {
+          "name": "Type",
+          "values": "Sandal",
+          "default": "Sandal",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Sandal"
+        },
+        {
+          "name": "Type",
+          "values": "Flip Flop",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Flip-Flop"
+        },
+        {
+          "name": "Type",
+          "values": "Clogs",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Shoe|Clogs"
+        },
+        
+        {
+          "name": "Size",
+          "values": "S;M;L;XL",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        },
+        {
+          "name": "Size Type",
+          "values": "Slim;Loose;Oversized",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        }
+      ]
+    },
+    {
+      "searchFor": "imac",
+      "category": "Desktop",
+      "categoryPath": "Computers|Desktops|iMac",
+      "useGender": false,
+      "defaultGender": "",
+      "avgPrice": 2000,
+      "retailers": [
+        "retail1",
+        "retail2"
+      ],
+      "facets": [
+        {
+          "name": "Season",
+          "values": "Summer",
+          "default": "Summer",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing"
+        },
+        {
+          "name": "Type",
+          "values": "Sandal",
+          "default": "Sandal",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Sandal"
+        },
+        {
+          "name": "Type",
+          "values": "Flip Flop",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Flip-Flop"
+        },
+        {
+          "name": "Type",
+          "values": "Clogs",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Footwear|Shoe|Clogs"
+        },
+        
+        {
+          "name": "Size",
+          "values": "S;M;L;XL",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        },
+        {
+          "name": "Size Type",
+          "values": "Slim;Loose;Oversized",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        }
+      ]
+    },
+   
+    {
+      "searchFor": "computer screen",
+      "category": "Monitor",
+      "categoryPath": "Computers|Monitors",
+      "useGender": true,
+      "defaultGender": "",
+      "avgPrice": 15,
+      "retailers": [
+        "retail1",
+        "retail2"
+      ],
+      "facets": [
+        {
+          "name": "Season",
+          "values": "Winter",
+          "default": "Winter",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing"
+        },
+        {
+          "name": "Type",
+          "values": "Cardigan",
+          "default": "Cardigan",
+          "variant": false,
+          "useWhenPropertyValue": "Clothing|Sweater|Cardigan"
+        },
+        
+        {
+          "name": "Size",
+          "values": "S;M;L;XL",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        },
+        {
+          "name": "Size Type",
+          "values": "Slim;Loose;Oversized",
+          "variant": true,
+          "useWhenPropertyValue": ""
+        }
+      ]
+    }
+    
+  ]
+}

@@ -2,9 +2,15 @@
   "global": {
     "fileLocation": "../images/",
     "offsetColor": 10,
+    "minWidthPhotos": 600,
+    "minNumberOfPhotos": 500,
     "offsetHSV": 10,
     "GetImagesSkipExistingCategories":true,
+    "OpenAISkipExisting":true,
     "AWSSkipExisting":true,
+    "AWSMinConfidence": 80,
+    "AWSMaxConfidence": 90,
+    "UseMaxLabels": true,
     "forceUniqueImageAllCategories":false,
     "catalogJsonFile": "catalogs/fashion_catalog.json",
     "baseUrl":"https://fashion.coveodemo.com/",
@@ -19,8 +25,9 @@
       "defaultGender": "",
       "avgPrice": 35,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Birkenstock",
+        "Reef",
+        "Nike","Adidas", "Teva","Clarks"
       ],
       "facets": [
         {
@@ -52,13 +59,13 @@
         
         {
           "name": "Size",
-          "values": "S;M;L;XL",
+          "values": "XS;S;M;L;XL",
           "variant": true,
           "useWhenPropertyValue": ""
         },
         {
           "name": "Size Type",
-          "values": "Slim;Loose;Oversized",
+          "values": "Slim;Loose;Wide",
           "variant": true,
           "useWhenPropertyValue": ""
         }
@@ -72,8 +79,8 @@
       "defaultGender": "",
       "avgPrice": 15,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Nike",
+        "Adidas","Happy Socks","Givenchy","Gucci","Calvin Klein","Missoni"
       ],
       "facets": [
         {
@@ -99,7 +106,7 @@
         },
         {
           "name": "Size Type",
-          "values": "Slim;Loose;Oversized",
+          "values": "Casual;Sportive;Urban",
           "variant": true,
           "useWhenPropertyValue": ""
         }
@@ -111,10 +118,10 @@
       "categoryPath": "Winter|Clothing|Cardigan",
       "useGender": true,
       "defaultGender": "",
-      "avgPrice": 15,
+      "avgPrice": 45,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Adidas",
+        "American Eagle","Armani","Banana Republic","Benetton","Brixton","CMP","Ralph Lauren","Timberland"
       ],
       "facets": [
         {
@@ -154,8 +161,8 @@
       "defaultGender": "",
       "avgPrice": 15,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Armani",
+        "Berghaus","Billabong","Esprit","Icepeak","Lacoste","Oakley","Replay","Umbro"
       ],
       "facets": [
         {
@@ -181,7 +188,7 @@
         },
         {
           "name": "Size Type",
-          "values": "Slim;Loose;Oversized",
+          "values": "Slim;Sportive;Urban",
           "variant": true,
           "useWhenPropertyValue": ""
         }
@@ -195,8 +202,8 @@
       "defaultGender": "",
       "avgPrice": 35,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Arena",
+        "Bally","Bench","BOSS","Carlheim","Columbia","Delsey","Ellesse","Esprit","Guess","Jordan","Osprey","Ogio","Reebok"
       ],
       "facets": [
         {
@@ -244,8 +251,8 @@
           "useWhenPropertyValue": "Bag|Shopping Bag"
         },
         {
-          "name": "Size",
-          "values": "S",
+          "name": "Size Type",
+          "values": "Sportive;Urban;Outdoor",
           "variant": true,
           "useWhenPropertyValue": ""
         }
@@ -257,10 +264,10 @@
       "categoryPath": "Summer|Clothing|Coats",
       "useGender": true,
       "defaultGender": "",
-      "avgPrice": 45,
+      "avgPrice": 125,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Adidas",
+        "American Eagle","Armani","Banana Republic","Benetton","Brixton","CMP","Ralph Lauren","Timberland"
       ],
       "facets": [
         {
@@ -317,8 +324,8 @@
       "defaultGender": "",
       "avgPrice": 25,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Adidas",
+        "American Eagle","Armani","Banana Republic","Benetton","Brixton","CMP","Ralph Lauren","Timberland"
       ],
       "facets": [
         {
@@ -361,10 +368,10 @@
       "categoryPath": "Summer|Accessories|Shoes",
       "useGender": true,
       "defaultGender": "",
-      "avgPrice": 35,
+      "avgPrice": 55,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Aigle",
+        "Aldo","Alpina","Arena","ASICS","Bershka","BOSS","Calvin Klein","Converse","Columbia","Diesel","ECCO","Fendi","G-Star","HUGO","K2","Lacoste","Mammut","Nike"
       ],
       "facets": [
         {
@@ -407,7 +414,7 @@
         },
         {
           "name": "Size Type",
-          "values": "Slim;Loose;Oversized",
+          "values": "Slim;Loose;Oversized;Wide",
           "variant": true,
           "useWhenPropertyValue": ""
         }
@@ -421,8 +428,8 @@
       "defaultGender": "Women",
       "avgPrice": 55,
       "retailers": [
-        "retail1",
-        "retail2"
+        "ABODI",
+        "AllSaints","America Today","American Vintage","Anna Field","Barbour","Bogner","Calvin Klein","Ciso","Culture","Desigual","Esprit","Fiorucci","GAP","GANT","Lounge Nine","Milly"
       ],
       "facets": [
         {
@@ -473,8 +480,8 @@
       "defaultGender": "",
       "avgPrice": 35,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Adidas",
+        "American Eagle","Armani","Banana Republic","Benetton","Brixton","CMP","Ralph Lauren","Timberland"
       ],
       "facets": [
         {
@@ -511,10 +518,10 @@
       "categoryPath": "Summer|Clothing|Coats|Jackets",
       "useGender": true,
       "defaultGender": "",
-      "avgPrice": 35,
+      "avgPrice": 85,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Adidas",
+        "American Eagle","Armani","Banana Republic","Benetton","Brixton","CMP","Ralph Lauren","Timberland"
       ],
       "facets": [
         {
@@ -558,8 +565,8 @@
       "defaultGender": "",
       "avgPrice": 35,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Anna Field",
+        "BOSS","Calvin Klein","Diesel","Ellesse","HUGO","Lacoste","Lindex","Next","Opus","Sean John"
       ],
       "facets": [
         {
@@ -628,8 +635,8 @@
       "defaultGender": "",
       "avgPrice": 25,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Billabong",
+        "Bruno Banani","City Chic","Elomi","Esprit","Guess","Hummel","Ralph Lauren","Maidenform","ONLY","Olympia"
       ],
       "facets": [
         {
@@ -666,10 +673,10 @@
       "categoryPath": "Winter|Accessories|Shoes|Boots",
       "useGender": false,
       "defaultGender": "",
-      "avgPrice": 35,
+      "avgPrice": 95,
       "retailers": [
-        "retail1",
-        "retail2"
+        "Aigle",
+        "Aldo","Alpina","Arena","ASICS","Bershka","BOSS","Calvin Klein","Converse","Columbia","Diesel","ECCO","Fendi","G-Star","HUGO","K2","Lacoste","Mammut","Nike"
       ],
       "facets": [
         {
@@ -718,11 +725,11 @@
       "categoryPath": "Summer|Clothing|Blouses",
       "useGender": true,
       "defaultGender": "",
-      "avgPrice": 35,
+      "avgPrice": 45,
       "retailers": [
-        "retail1",
-        "retail2"
-      ],
+        "ABODI",
+        "AllSaints","America Today","American Vintage","Anna Field","Barbour","Bogner","Calvin Klein","Ciso","Culture","Desigual","Esprit","Fiorucci","GAP","GANT","Lounge Nine","Milly"
+           ],
       "facets": [
         {
           "name": "Season",
@@ -758,10 +765,10 @@
       "categoryPath": "Winter|Clothing|Pants|Jeans",
       "useGender": true,
       "defaultGender": "",
-      "avgPrice": 35,
+      "avgPrice": 85,
       "retailers": [
-        "retail1",
-        "retail2"
+        "AG Jeans",
+        "Levis","American Eagle","Amsterdenim","Barbour","BOSS","G-Star","BRAX","Converse","Diesel","Esprit","GAP","Wrangler","Vero Moda"
       ],
       "facets": [
         {
@@ -801,9 +808,9 @@
       "defaultGender": "Women",
       "avgPrice": 35,
       "retailers": [
-        "retail1",
-        "retail2"
-      ],
+        "ABODI",
+        "AllSaints","America Today","American Vintage","Anna Field","Barbour","Bogner","Calvin Klein","Ciso","Culture","Desigual","Esprit","Fiorucci","GAP","GANT","Lounge Nine","Milly"
+           ],
       "facets": [
         {
           "name": "Season",
@@ -847,8 +854,8 @@
       "defaultGender": "",
       "avgPrice": 35,
       "retailers": [
-        "retail1",
-        "retail2"
+        "AG Jeans",
+        "Levis","American Eagle","Amsterdenim","Barbour","BOSS","G-Star","BRAX","Converse","Diesel","Esprit","GAP","Wrangler","Vero Moda"
       ],
       "facets": [
         {
@@ -885,10 +892,10 @@
       "categoryPath": "Winter|Clothing|Pants",
       "useGender": true,
       "defaultGender": "",
-      "avgPrice": 35,
+      "avgPrice": 55,
       "retailers": [
-        "retail1",
-        "retail2"
+        "AG Jeans",
+        "Levis","American Eagle","Amsterdenim","Barbour","BOSS","G-Start","BRAX","Converse","Diesel","Esprit","GAP","Wrangler","Vero Moda"
       ],
       "facets": [
         {

@@ -10,7 +10,11 @@ images/
 node_modules/
 dist/
 .env
-
+json/
+html/
+back/
+sfdc/
+google-secrets.json
 # Compiled Java class files
 *.class
 
