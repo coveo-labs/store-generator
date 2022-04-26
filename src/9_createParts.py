@@ -208,6 +208,24 @@ def createTextv2(product, keyword, boat, version, sentence, temp, length):
     )
   return line
 
+def getImage(level3, type):
+  fileloc = 'images\\'
+  if type:
+    #use that
+    fileloc+=type
+  else:
+    #use level3
+    fileloc+=level3
+  try:
+    random_file=random.choice(os.listdir(fileloc))
+  except:
+    fileloc = 'images\\'
+    fileloc+=level3
+    random_file=random.choice(os.listdir(fileloc))
+
+  print (fileloc+'\\'+random_file)
+  return fileloc+'\\'+random_file
+
 def createRecord(recid, boat):
   record=[]
   record = createPartRecord()
@@ -227,7 +245,10 @@ def createRecord(recid, boat):
   record['ec_in_stock']='yes'
   record['ec_cogs']=''
   record['ec_rating']=str(random.randint(2,4))+'.'+str(random.randint(1,9))
-  record['ec_images']=''
+  type=''
+  if 'prttype' in record:
+    type=record['prttype']
+  record['ec_images']=getImage(record['Level3'], type)
   #record['ec_height']=''
   #record['ec_width']=''
   #record['ec_depth']=''
