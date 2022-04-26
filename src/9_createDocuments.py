@@ -10,13 +10,22 @@ import base64
 import operator
 import math
 import openai
+import csv
 
 import glob
 
 P_ENGINE = 'text-curie-001'
 FILECOUNTER=2000
 FILENAME=''
+FILENAME_ACCOUNTS='AccountsAndContacts.csv'
+CASES_ONLY = True
+ALL_ACCOUNTS=[]
+ACCOUNT_POINTER=0
 
+def readCSV():
+  global ALL_ACCOUNTS
+  with open(FILENAME_ACCOUNTS, mode='r') as csv_file:
+    ALL_ACCOUNTS = list(csv.DictReader(csv_file, delimiter=';'))
 
 def cleanUp(text):
   text = text.replace('<|endoftext|>','')
@@ -185,6 +194,7 @@ def createInternalSupportDocument(product, keyword,boat, version,title_sentence,
   jsond['filename']='IS_'+boat+'_'+version+'_'+keyword
   jsond['title']=title
   jsond['boat']=boat
+  jsond['product']=product
   jsond['version']=version
   jsond['problem']=problem
   jsond['symptoms']=symptoms
@@ -220,6 +230,7 @@ def createQADocument(product, keyword, boat, version,title_sentence, sentence, t
 
   jsond={}
   jsond['filename']='QA_'+boat+'_'+version+'_'+keyword
+  jsond['product']=product
   jsond['title']=title
   jsond['boat']=boat
   jsond['version']=version
@@ -241,7 +252,7 @@ def createSpecificQADocuments(product, keywords, sentences, boat, version,temp=0
     for keyword in keywords:
       doc = createQADocument(product, keyword, boat, version,sentence, sentence, temp, length)
 
-def createCaseComment(product, boat,version,symptoms_sentence,refcase, temp, length):
+def createCaseComment(product, boat,version,symptoms_sentence,refcase, account, name, temp, length):
   print('createCaseComment '+product+'/'+boat+'/'+version)
   HTML=''
   HTML+='<h2>createCaseComment</h2>'
@@ -271,15 +282,26 @@ def createCaseComment(product, boat,version,symptoms_sentence,refcase, temp, len
 
 def createCase(product, keyword,boat,version, title_sentence, problem_sentence, symptoms_sentence, alltitles, temp=0.7, length=500):
   global FILECOUNTER
+  global ACCOUNT_POINTER
+  global ALL_ACCOUNTS
   print('createCase '+product+'/'+boat+'/'+version)
   HTML=''
   #format:
   # TITLE
   # PROBLEM
   # SYMPTOMS
+  print(ALL_ACCOUNTS[ACCOUNT_POINTER])
+  account=ALL_ACCOUNTS[ACCOUNT_POINTER]['Account']
+  name=ALL_ACCOUNTS[ACCOUNT_POINTER]['Contact']
+  print ("For Account/Contact: "+account+'/'+name)
+  ACCOUNT_POINTER += 1
+  if ACCOUNT_POINTER>len(ALL_ACCOUNTS):
+    ACCOUNT_POINTER = 0
   title=''
   problem=''
   symptoms=''
+  title_sentence = title_sentence.replace('[ACCOUNT]',account)
+  title_sentence = title_sentence.replace('[NAME]',name)
   title=createTitle(product, keyword,boat, version, title_sentence)
 
   #title=createText(product, keyword,boat, version, title_sentence, temp, length)
@@ -295,6 +317,8 @@ def createCase(product, keyword,boat,version, title_sentence, problem_sentence, 
   #problem=createText(product, keyword,boat, version, problem_sentence, temp, length)
   problem = title
   symptoms_sentence = symptoms_sentence.replace('[PROBLEM]',problem)
+  symptoms_sentence = symptoms_sentence.replace('[ACCOUNT]',account)
+  symptoms_sentence = symptoms_sentence.replace('[NAME]',name)
   symptoms=createTextv2(product, keyword,boat, version, symptoms_sentence, temp, length)
   HTML = '<HR>'
   HTML+='<h2>createCase</h2>'
@@ -325,10 +349,13 @@ def createCase(product, keyword,boat,version, title_sentence, problem_sentence, 
   jsond['case']='C1'+str(FILECOUNTER).zfill(6)
   jsond['title']=title
   jsond['boat']=boat
+  jsond['product']=product
+  jsond['account']=account
+  jsond['name']=name
   jsond['version']=version
   jsond['problem']=problem
   jsond['symptoms']=symptoms
-  jsond['comments']=createCaseComment(product, boat,version,symptoms,jsond['case'], temp, length)
+  jsond['comments']=createCaseComment(product, boat,version,symptoms,jsond['case'],account,name, temp, length)
   HTML+='<h3>Comment</h3>'
   HTML+='<p class="comment">'+jsond['comments']['comment']+"</p>"
   saveOutput(HTML, jsond)
@@ -385,6 +412,7 @@ def createWebsite(descr, listoffeatures, pdf, product, boat, relatedparts,versio
   jsond['title']=''+product+' (Version: '+version+'), for model: '+boat
   jsond['boat']=boat
   jsond['version']=version
+  jsond['product']=product
   jsond['descr']=descr
   jsond['allfeatures']=listoffeatures
   jsond['parts']=relatedparts
@@ -549,6 +577,7 @@ def createPDFDocument(product, keyword, boat, menus, screens, buttons,relatedpar
   jsond['filename']='PDF_'+boat+'_'+version+'_'+keyword
   jsond['title']='Installation manual for: '+product+' (Version: '+version+'), model: '+boat
   jsond['boat']=boat
+  jsond['product']=product
   jsond['version']=version
   jsond['buttons']=buttons
   jsond['screens']=allscreenexplanations
@@ -635,6 +664,7 @@ def createWordDocument(product, keyword, boat,menus, screens, buttons,features,r
   jsond['version']=version
   jsond['descr']=descr
   jsond['overview']=overview
+  jsond['product']=product
   jsond['features']=listoffeatures
   jsond['parts']=relatedparts
  
@@ -670,31 +700,33 @@ def createGuidareDocuments(boat, version,temp=0.8, length=500):
             "Built in Wifi",
             "FishFinder"]
   #********************** QA ******************************
-  createQADocuments(product,boat, version, temp, length)
-  
-  keywords=['enable night mode with','disable night mode with','disable real time tracking with','enable real time tracking with','disable the fishfinder function with','enable the doppler radar with']
-  sentences=['How do you [KEYWORD] the [PRODUCT]?','Create instructions on how to [KEYWORD] the [PRODUCT].']
-  createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
-  
-  keywords=['real time tracking','wind capturing','monitoring the bottom of the ocean','identification of vessels']
-  sentences=['How does [KEYWORD] work with the [PRODUCT]?']
-  createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
+  if not CASES_ONLY:
+    createQADocuments(product,boat, version, temp, length)
+    
+    keywords=['enable night mode with','disable night mode with','disable real time tracking with','enable real time tracking with','disable the fishfinder function with','enable the doppler radar with']
+    sentences=['How do you [KEYWORD] the [PRODUCT]?','Create instructions on how to [KEYWORD] the [PRODUCT].']
+    createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
+    
+    keywords=['real time tracking','wind capturing','monitoring the bottom of the ocean','identification of vessels']
+    sentences=['How does [KEYWORD] work with the [PRODUCT]?']
+    createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
 
-  keywords=['real time tracking','wind capturing','monitoring the bottom of the ocean','identification of vessels']
-  sentences=['Explain to me how [KEYWORD] works with the [PRODUCT]?']
-  createSpecificQADocuments(product,keywords, sentences, boat, version,temp, length)
+    keywords=['real time tracking','wind capturing','monitoring the bottom of the ocean','identification of vessels']
+    sentences=['Explain to me how [KEYWORD] works with the [PRODUCT]?']
+    createSpecificQADocuments(product,keywords, sentences, boat, version,temp, length)
 
-  #********************** Internal Support Documents *********
-  title_sentence='How to solve [KEYWORD] for [PRODUCT] on a [BOAT].'
-  problem_sentence='Create a description for this problem: The [PRODUCT] has [KEYWORD]. '
-  symptoms_sentence='What are the symptoms for the following problem: [PROBLEM].'
-  instructions_sentence='Create a solution for the following problem: [PROBLEM].'
-  keywords=['a stuck device','a blank screen','a blinking red led','a spinning progress bar','a map not being displayed','no connection to sensors']
-  for keyword in keywords:
-    createInternalSupportDocument(product,keyword, boat, version,title_sentence, problem_sentence,symptoms_sentence, instructions_sentence, 0.8, length)
-    # break
+    #********************** Internal Support Documents *********
+    title_sentence='How to solve [KEYWORD] for [PRODUCT] on a [BOAT].'
+    problem_sentence='Create a description for this problem: The [PRODUCT] has [KEYWORD]. '
+    symptoms_sentence='What are the symptoms for the following problem: [PROBLEM]'
+    instructions_sentence='Create a solution for the following problem: [PROBLEM]'
+    keywords=['a stuck device','a blank screen','a blinking red led','a spinning progress bar','a map not being displayed','no connection to sensors']
+    for keyword in keywords:
+      createInternalSupportDocument(product,keyword, boat, version,title_sentence, problem_sentence,symptoms_sentence, instructions_sentence, 0.8, length)
+      # break
 
   #********************** Cases Documents *********
+  #NAME, ACCOUNT
   titlewords=['I need a fix for [KEYWORD] on my [PRODUCT].',
   'When using the product [PRODUCT] on my [BOAT], [KEYWORD].']
   title_sentence='[TITLEWORD]'
@@ -712,7 +744,7 @@ def createGuidareDocuments(boat, version,temp=0.8, length=500):
 
   #********************** Cases Documents *********
   titlewords=[
-  'On my [BOAT], how do i fix: [KEYWORD] is [OPERATION] the [PRODUCT] application.',
+  'On my [BOAT], how do i fix [KEYWORD] is [OPERATION] the [PRODUCT] application.',
   'How do i fix: [KEYWORD] is [OPERATION] the [PRODUCT] application.']
   title_sentence='[TITLEWORD]'
   problem_sentence='Create a description for this problem: [TITLE] for the product [PRODUCT]. '
@@ -732,14 +764,15 @@ def createGuidareDocuments(boat, version,temp=0.8, length=500):
   #   break
   #  break
 
+  if not CASES_ONLY:
 
-  #********************** PDF ******************************
-  filenamepdf=createPDFDocument(product, '', boat, menus, screens, buttons,relatedparts, version, temp, length)
-  #********************** Word ******************************
-  descr, listoffeatures=createWordDocument(product, '', boat, menus, screens, buttons,features,relatedparts, version, temp, length)
-  #********************** Website ******************************
-  # Create Website version from the WORD documents
-  createWebsite(descr, listoffeatures, filenamepdf, product, boat, relatedparts,version, temp, length)
+    #********************** PDF ******************************
+    filenamepdf=createPDFDocument(product, '', boat, menus, screens, buttons,relatedparts, version, temp, length)
+    #********************** Word ******************************
+    descr, listoffeatures=createWordDocument(product, '', boat, menus, screens, buttons,features,relatedparts, version, temp, length)
+    #********************** Website ******************************
+    # Create Website version from the WORD documents
+    createWebsite(descr, listoffeatures, filenamepdf, product, boat, relatedparts,version, temp, length)
 
 
 def createAssistentDocuments(boat, version,temp=0.8, length=500):
@@ -766,30 +799,31 @@ def createAssistentDocuments(boat, version,temp=0.8, length=500):
             "Supports Single, Three or Five camera setups"
 ]
   #********************** QA ******************************
-  createQADocuments(product,boat, version, temp, length)
-  
-  keywords=['disable the stern camera with','enable all cameras with','disable the gps with','execute an emergency stop with']
-  sentences=['How do you [KEYWORD] the [PRODUCT]?','Create instructions on how to [KEYWORD] the [PRODUCT].']
-  createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
-  
-  keywords=['assisted docking','collision detection','distance calculation within the dock','automating the propulsion system']
-  sentences=['How does [KEYWORD] work with the [PRODUCT]?']
-  createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
+  if not CASES_ONLY:
+    createQADocuments(product,boat, version, temp, length)
+    
+    keywords=['disable the stern camera with','enable all cameras with','disable the gps with','execute an emergency stop with']
+    sentences=['How do you [KEYWORD] the [PRODUCT]?','Create instructions on how to [KEYWORD] the [PRODUCT].']
+    createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
+    
+    keywords=['assisted docking','collision detection','distance calculation within the dock','automating the propulsion system']
+    sentences=['How does [KEYWORD] work with the [PRODUCT]?']
+    createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
 
-  keywords=['assisted docking','collision detection','distance calculation within the dock','automating the propulsion system']
-  sentences=['Explain to me how [KEYWORD] works with the [PRODUCT]?']
-  createSpecificQADocuments(product,keywords, sentences, boat, version,temp, length)
+    keywords=['assisted docking','collision detection','distance calculation within the dock','automating the propulsion system']
+    sentences=['Explain to me how [KEYWORD] works with the [PRODUCT]?']
+    createSpecificQADocuments(product,keywords, sentences, boat, version,temp, length)
 
-  #********************** Internal Support Documents *********
-  title_sentence='How to solve [KEYWORD] for [PRODUCT] on a [BOAT].'
-  problem_sentence='Create a description for this problem: The [PRODUCT] has [KEYWORD]. '
-  symptoms_sentence='What are the symptoms for the following problem: [PROBLEM].'
-  instructions_sentence='Create a solution for the following problem: [PROBLEM].'
-  keywords=['a blank camera','when there is no GPS signal recevied','a blinking red alert led','when the distance calculation gives wrong results'
-  ,'when propulsion is not activated when docking','when the propulsion speed is to high']
-  for keyword in keywords:
-    createInternalSupportDocument(product,keyword, boat, version,title_sentence, problem_sentence,symptoms_sentence, instructions_sentence, 0.8, length)
-    # break
+    #********************** Internal Support Documents *********
+    title_sentence='How to solve [KEYWORD] for [PRODUCT] on a [BOAT].'
+    problem_sentence='Create a description for this problem: The [PRODUCT] has [KEYWORD]. '
+    symptoms_sentence='What are the symptoms for the following problem: [PROBLEM]'
+    instructions_sentence='Create a solution for the following problem: [PROBLEM]'
+    keywords=['a blank camera','when there is no GPS signal recevied','a blinking red alert led','when the distance calculation gives wrong results'
+    ,'when propulsion is not activated when docking','when the propulsion speed is to high']
+    for keyword in keywords:
+      createInternalSupportDocument(product,keyword, boat, version,title_sentence, problem_sentence,symptoms_sentence, instructions_sentence, 0.8, length)
+      # break
 
   #********************** Cases Documents *********
   titlewords=['I need a fix for [KEYWORD] on my [PRODUCT].',
@@ -809,7 +843,7 @@ def createAssistentDocuments(boat, version,temp=0.8, length=500):
 
   #********************** Cases Documents *********
   titlewords=[
-  'On my [BOAT], how do i fix: [KEYWORD] is [OPERATION] the [PRODUCT] application.',
+  'On my [BOAT], how do i fix [KEYWORD] is [OPERATION] the [PRODUCT] application.',
   'How do i fix: [KEYWORD] is [OPERATION] the [PRODUCT] application.']
   title_sentence='[TITLEWORD]'
   problem_sentence='Create a description for this problem: [TITLE] for the product [PRODUCT]. '
@@ -828,14 +862,15 @@ def createAssistentDocuments(boat, version,temp=0.8, length=500):
   #   break
   #  break
 
+  if not CASES_ONLY:
 
-  #********************** PDF ******************************
-  filenamepdf=createPDFDocument(product, '', boat, menus, screens, buttons, relatedparts,version, temp, length)
-  #********************** Word ******************************
-  descr, listoffeatures=createWordDocument(product, '', boat, menus, screens, buttons,features,relatedparts, version, temp, length)
-  #********************** Website ******************************
-  # Create Website version from the WORD documents
-  createWebsite(descr, listoffeatures, filenamepdf, product, boat, relatedparts,version, temp, length)
+    #********************** PDF ******************************
+    filenamepdf=createPDFDocument(product, '', boat, menus, screens, buttons, relatedparts,version, temp, length)
+    #********************** Word ******************************
+    descr, listoffeatures=createWordDocument(product, '', boat, menus, screens, buttons,features,relatedparts, version, temp, length)
+    #********************** Website ******************************
+    # Create Website version from the WORD documents
+    createWebsite(descr, listoffeatures, filenamepdf, product, boat, relatedparts,version, temp, length)
 
 
 def createVedereDocuments(boat, version,temp=0.8, length=500):
@@ -873,29 +908,30 @@ def createVedereDocuments(boat, version,temp=0.8, length=500):
             "Integrate with ISV (Internet Ship View) for remote communication"
   ]
   #********************** QA ******************************
-  createQADocuments(product,boat, version, temp, length)
-  
-  keywords=['add a new device to','add a new alarm setting to','diplay the Conning display with','reset all the alarms with','enable the firefight status display with','view the depth of the vessel with']
-  sentences=['How do you [KEYWORD] the [PRODUCT]?','Create instructions on how to [KEYWORD] the [PRODUCT].']
-  createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
-  
-  keywords=['monitoring the propulsion devices','fire fighting','monitoring the batteries','monitoring the tanks']
-  sentences=['How does [KEYWORD] work with the [PRODUCT]?']
-  createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
+  if not CASES_ONLY:
+    createQADocuments(product,boat, version, temp, length)
+    
+    keywords=['add a new device to','add a new alarm setting to','diplay the Conning display with','reset all the alarms with','enable the firefight status display with','view the depth of the vessel with']
+    sentences=['How do you [KEYWORD] the [PRODUCT]?','Create instructions on how to [KEYWORD] the [PRODUCT].']
+    createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
+    
+    keywords=['monitoring the propulsion devices','fire fighting','monitoring the batteries','monitoring the tanks']
+    sentences=['How does [KEYWORD] work with the [PRODUCT]?']
+    createSpecificQADocuments(product,keywords, sentences,boat, version, temp, length)
 
-  keywords=['setting up the alarms','the conning display','monitoring the devices','connecting a brand new device','adding new hardware']
-  sentences=['Explain to me how [KEYWORD] works with the [PRODUCT]?']
-  createSpecificQADocuments(product,keywords, sentences, boat, version,temp, length)
+    keywords=['setting up the alarms','the conning display','monitoring the devices','connecting a brand new device','adding new hardware']
+    sentences=['Explain to me how [KEYWORD] works with the [PRODUCT]?']
+    createSpecificQADocuments(product,keywords, sentences, boat, version,temp, length)
 
-  #********************** Internal Support Documents *********
-  title_sentence='How to solve [KEYWORD] for [PRODUCT] on a [BOAT].'
-  problem_sentence='Create a description for this problem: The [PRODUCT] has [KEYWORD]. '
-  symptoms_sentence='What are the symptoms for the following problem: [PROBLEM].'
-  instructions_sentence='Create a solution for the following problem: [PROBLEM].'
-  keywords=['a stuck device','how do i reset the software','a blank screen','a blinking alarm','cannot add a new device to the product','reset an alarm for a device','changing the alarm boundaries']
-  for keyword in keywords:
-    createInternalSupportDocument(product,keyword, boat, version,title_sentence, problem_sentence,symptoms_sentence, instructions_sentence, 0.8, length)
-    # break
+    #********************** Internal Support Documents *********
+    title_sentence='How to solve [KEYWORD] for [PRODUCT] on a [BOAT].'
+    problem_sentence='Create a description for this problem: The [PRODUCT] has [KEYWORD]. '
+    symptoms_sentence='What are the symptoms for the following problem: [PROBLEM]'
+    instructions_sentence='Create a solution for the following problem: [PROBLEM]'
+    keywords=['a stuck device','how do i reset the software','a blank screen','a blinking alarm','cannot add a new device to the product','reset an alarm for a device','changing the alarm boundaries']
+    for keyword in keywords:
+      createInternalSupportDocument(product,keyword, boat, version,title_sentence, problem_sentence,symptoms_sentence, instructions_sentence, 0.8, length)
+      # break
 
   #********************** Cases Documents *********
   titlewords=['I need a fix for [KEYWORD] on my [PRODUCT].',
@@ -916,7 +952,7 @@ def createVedereDocuments(boat, version,temp=0.8, length=500):
 
   #********************** Cases Documents *********
   titlewords=[
-  'On my [BOAT], how do i fix: [KEYWORD] is [OPERATION] the [PRODUCT] application.',
+  'On my [BOAT], how do i fix [KEYWORD] is [OPERATION] the [PRODUCT] application.',
   'How do i fix: [KEYWORD] is [OPERATION] the [PRODUCT] application.']
   title_sentence='[TITLEWORD]'
   problem_sentence='Create a description for this problem: [TITLE] for the product [PRODUCT]. '
@@ -936,23 +972,25 @@ def createVedereDocuments(boat, version,temp=0.8, length=500):
   #   break
   #  break
 
-
-  #********************** PDF ******************************
-  filenamepdf=createPDFDocument(product, '', boat, menus, screens, buttons,relatedparts, version, temp, length)
-  #********************** Word ******************************
-  descr, listoffeatures=createWordDocument(product, '', boat, menus, screens, buttons,features,relatedparts, version, temp, length)
-  #********************** Website ******************************
-  # Create Website version from the WORD documents
-  createWebsite(descr, listoffeatures, filenamepdf, product, boat, relatedparts,version, temp, length)
+  if not CASES_ONLY:
+    #********************** PDF ******************************
+    filenamepdf=createPDFDocument(product, '', boat, menus, screens, buttons,relatedparts, version, temp, length)
+    #********************** Word ******************************
+    descr, listoffeatures=createWordDocument(product, '', boat, menus, screens, buttons,features,relatedparts, version, temp, length)
+    #********************** Website ******************************
+    # Create Website version from the WORD documents
+    createWebsite(descr, listoffeatures, filenamepdf, product, boat, relatedparts,version, temp, length)
 
 
 def process(filename):
   #Get All files
   settings, config = loadConfiguration(filename)
-
+  readCSV()
   total=0
   temp = 0.8
   length = 500
+  if CASES_ONLY:
+    print("REMARK: Only cases will be created")
   #versions=['1','1 beta','2','2 beta','3 beta','3']  
   #boats=['Mercury','Yamaha','Honda','Evinrude','Suzuki','Johnson','Tohatsu','OMC','Chrysler','Force','Mariner','Mercruiser','Mercury','Nissan','Sears']
   versions=['1']  

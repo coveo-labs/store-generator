@@ -10,10 +10,39 @@ import base64
 import operator
 import math
 import openai
-
+# generate random integer values
+from random import seed
+from random import randint
 import glob
 
 DIRECTORY='sfdc'
+PRODUCT_LIST=[{'product':'Guidare Boat Navigation Software Suite','id':'01t8c00000LeoFpAAJ','name':'Guidare'},
+              {'product':'Assistente Boat Assisted Software Suite','id':'01t8c00000LeoFtAAJ','name':'Assistente'},
+              {'product':'Vedere Vessel Management Software','id':'01t8c00000LeoFoAAJ', 'name':'Vedere'},
+              ]
+OWNER_LIST=[{'id':'0058c00000BUmI9AAL','name':'Peter Robberts'},
+              {'id':'0058c00000BUmIEAA1','name':'Amanda Smith'},
+              {'id':'0058c00000BUmIFAA1', 'name':'Jane Jones'},
+              {'id':'0058c00000BUmIGAA1', 'name':'John Williams'},
+              {'id':'0058c00000BUmIHAA1', 'name':'James Miller'},
+              {'id':'0058c00000BUmIIAA1', 'name':'Richard Davis'},
+              {'id':'0058c00000BUmIJAA1', 'name':'Thomas Brown'},
+              {'id':'0058c00000BUmIKAA1', 'name':'Mark Garcia'},
+              ]
+
+
+def getProductId(jsondata):
+  prodId = ''
+  product=jsondata['product']
+  for prod in PRODUCT_LIST:
+    if prod['product']==product:
+        prodId = prod['id']
+  return prodId
+
+def getOwnerId():
+  ownerId = ''
+  occurence = randint(0, len(OWNER_LIST)-1)
+  return OWNER_LIST[occurence]
 
 
 def transformToSFDCCase(jsondata):
@@ -24,6 +53,7 @@ def transformToSFDCCase(jsondata):
   #   "title": "On my Mercury, how do i fix: activating the assistent is shutting down the Assistente Boat Assisted Software Suite application.",
   #   "boat": "Mercury",
   #   "version": "1",
+  #   "product": "Vedere"
   #   "problem": "On my Mercury, how do i fix: activating the assistent is shutting down the Assistente Boat Assisted Software Suite application.",
   #   "symptoms": "The Mercury Assistent boat assisted software suite was shut down because the manual activation process.",
   #   "comments": {
@@ -46,19 +76,43 @@ def transformToSFDCCase(jsondata):
   #           "Priority": "Medium",
   #           "Status": "New",
   #           "Type": "Electrical"
+  #"AccountId": "@AccountRef3"
   #       }
   newjson={}
   newjson["attributes"]={}
   newjson["attributes"]["type"]="Case"
   newjson["attributes"]["referenceId"]=jsondata["case"]
   newjson["Subject"]=jsondata["title"]
+  newjson["ContactId"]=''+jsondata["name"]
+  newjson["AccountId"]=''+jsondata["account"]
+  owner = getOwnerId()
+  newjson["OwnerId"]=owner['id']
+  newjson["OwnerName"]=owner['name']
+  newjson["ProductId"]=''+getProductId(jsondata)
   newjson["Origin"]="Web"
   newjson["Reason"]="Setup"
   newjson["Description"]=jsondata["symptoms"]
   newjson["Priority"]="Medium"
   newjson["Status"]="New"
-  newjson["Type"]=jsondata["boat"]
+  newjson["Type"]="Problem"
+  newjson["SuppliedName"]="Generator"
   return newjson
+
+def transformToSFDCKB(jsondata):
+  #https://help.salesforce.com/s/articleView?id=knowledge_article_importer.htm&language=en_US&type=5
+  # input:
+  # {
+  # "filename": "IS_Mercury_1_a blank screen",
+  # "title": "How to solve a blank screen for Vedere Vessel Management Software on a Mercury.",
+  # "boat": "Mercury",
+  # "version": "1",
+  # "problem": "The Vedere Vessel Management Software may have lost power and crashed, resulting in a blank screen.",
+  # "symptoms": "The symptoms for this problem may include: a blank screen, no sound, or freezing.",
+  # "instructions": "The Vedere Vessel Management Software may have lost power and crashed, resulting in a blank screen. <BR>The user can reinstall the software from the manufacturer's website."
+  # }
+  # ouput:
+  # "Title", "summary__c", "Record Type":"FAQ", ""
+  return jsondata
 
 def transformToSFDCComment(jsondata):
   #input:
@@ -90,8 +144,10 @@ def transformToSFDCComment(jsondata):
   newjson["attributes"]={}
   newjson["attributes"]["type"]="CaseComment"
   newjson["attributes"]["referenceId"]=jsondata["case"]+"1"
-  newjson["CommentBody"]=jsondata["comments"]["comment"]
+  newjson["CommentBody"]=jsondata["comments"]["comment"].replace('<BR>',"")
   newjson["ParentId"]='@'+jsondata["case"]
+  #newjson["CreatorName"]=''+jsondata["CreatorName"]
+  #https://salesforce.stackexchange.com/questions/245214/how-to-specify-comment-case-owner
   return newjson
 
 
@@ -102,8 +158,46 @@ def loadJson(filename):
         newrecord = json.loads(text)
   return newrecord
 
+def save(nr,cases, comments):
+  #save the files
+  plan = [
+  {
+    "sobject": "Case",
+    "saveRefs": True,
+    "resolveRefs": False,
+    "files": [
+      str(nr)+"Cases.json"
+    ]
+  },
+  {
+    "sobject": "CaseComment",
+    "saveRefs": False,
+    "resolveRefs": True,
+    "files": [
+      str(nr)+"CasesComments.json"
+    ]
+  }
+]
+  with open(DIRECTORY+"\\"+str(nr)+"Plan.json", "w", encoding='utf-8') as handler:
+        text = json.dumps(plan, ensure_ascii=True)
+        handler.write(text)
+
+  with open(DIRECTORY+"\\"+str(nr)+"Cases.json", "w", encoding='utf-8') as handler:
+        jsondata={}
+        jsondata["records"]=cases
+        text = json.dumps(jsondata, ensure_ascii=True)
+        handler.write(text)
+  with open(DIRECTORY+"\\"+str(nr)+"CasesComments.json", "w", encoding='utf-8') as handler:
+        jsondata={}
+        jsondata["records"]=comments
+        text = json.dumps(jsondata, ensure_ascii=True)
+        handler.write(text)
+
 def process(filename):
+  #Cannot contain more than 200 records...
+  #So we need to split them up
   total=0
+  nr = 1
   alljsoncases=[]
   alljsoncomments=[]
   jsons = glob.glob('json\\CASE_*.json',recursive=True)
@@ -111,29 +205,51 @@ def process(filename):
     print("Processing: "+filename)
     jsondata = loadJson(filename)
     case = transformToSFDCCase(jsondata)
+    jsondata['CreatorName']=case['OwnerName']
+    del case['OwnerName']
     casecomment = transformToSFDCComment(jsondata)
     alljsoncases.append(case)
     alljsoncomments.append(casecomment)
+    total+=2
+    if (total>150):
+      save(nr, alljsoncases, alljsoncomments)
+      nr+=1
+      total = 0
+      alljsoncases=[]
+      alljsoncomments=[]
+
+
+  
+  
+  print("We are done!\n")
+  print("Processed: "+str(total)+" results\n")
+
+
+def processKB(filename):
+  total=0
+  alljsonkbs=[]
+  jsons = glob.glob('json\\IS_*.json',recursive=True)
+  for filename in jsons:
+    print("Processing: "+filename)
+    jsondata = loadJson(filename)
+    kb = transformToSFDCKB(jsondata)
+    alljsonkbs.append(case)
     total+=1
   #save the files
-  with open(DIRECTORY+"\\Cases.json", "w", encoding='utf-8') as handler:
+  with open(DIRECTORY+"\\KBs.json", "w", encoding='utf-8') as handler:
         jsondata={}
-        jsondata["records"]=alljsoncases
-        text = json.dumps(jsondata, ensure_ascii=True)
-        handler.write(text)
-  with open(DIRECTORY+"\\CasesComments.json", "w", encoding='utf-8') as handler:
-        jsondata={}
-        jsondata["records"]=alljsoncases
+        jsondata["records"]=alljsonkbs
         text = json.dumps(jsondata, ensure_ascii=True)
         handler.write(text)
   
   print("We are done!\n")
-  print("Processed: "+str(total)+" results\n")
-  
+  print("Processed: "+str(total)+" results\n")  
+
 try:
   #fileconfig = sys.argv[1]
   #process(fileconfig)
   process('')
+  #processKB('')
 except Exception as e: 
   print(e)
   traceback.print_exception(*sys.exc_info())

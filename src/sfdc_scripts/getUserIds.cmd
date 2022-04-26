@@ -1,0 +1,1 @@
+sfdx force:data:soql:query -u vbernard@barca.com -q "SELECT Id, Name from User" -r "csv" > ..\UserIds.csv

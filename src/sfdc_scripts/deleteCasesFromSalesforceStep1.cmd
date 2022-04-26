@@ -1,0 +1,1 @@
+sfdx force:data:soql:query -u vbernard@barca.com -q "SELECT Id FROM Case Where SuppliedName='Generator'" -r "csv" > Cases.csv

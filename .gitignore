@@ -17,7 +17,7 @@ sfdc/
 google-secrets.json
 # Compiled Java class files
 *.class
-
+*.csv
 # Compiled Python bytecode
 *.py[cod]
 
