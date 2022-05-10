@@ -12,8 +12,16 @@ import math
 import openai
 import csv
 import random
-
+import pandas as pd
+from pathlib import Path
 import glob
+
+
+df = pd.read_excel(Path('Brand Detail.xlsx'), sheet_name='Parts Tax - Fields', na_filter=False)
+
+
+# cache of generated description, to avoid fetching the same every time
+#DESC_MAP = utils.json_load(Path('../outputs/descriptions.json'))
 
 P_ENGINE = 'text-curie-001'
 FILECOUNTER=2000
@@ -26,35 +34,36 @@ PARTS_POINTER=0
 
 def readCSV():
   global ALL_PARTS
-  with open(FILENAME_PARTS, mode='r') as csv_file:
-    ALL_PARTS = list(csv.DictReader(csv_file, delimiter=';'))
+  ALL_PARTS = df.to_dict(orient='records')
+  #with open(FILENAME_PARTS, mode='r') as csv_file:
+  #  ALL_PARTS = list(csv.DictReader(csv_file, delimiter=';'))
   level1=''
   level2=''
   level3=''
   #Fix the parts, because level1, level2, level3 might not be there
   for part in ALL_PARTS:
     #print (part)
-    part['Level1']=part['ï»¿Level1']
-    if part['Level1']=='':
-      part['Level1']=level1
+    part['Category Level 1']=part['Category Level 1']
+    if part['Category Level 1']=='':
+      part['Category Level 1']=level1
     else:
-      level1 = part['Level1']
-    if part['Level2']=='':
-      part['Level2']=level2
+      level1 = part['Category Level 1']
+    if part['Category Level 2']=='':
+      part['Category Level 2']=level2
     else:
-      level2 = part['Level2']
-    if part['Level3']=='':
-      part['Level3']=level3
+      level2 = part['Category Level 2']
+    if part['Category Level 3']=='':
+      part['Category Level 3']=level3
     else:
-      level3 = part['Level3']
+      level3 = part['Category Level 3']
     #clean field 'Power (EcPowerOutput)'
-    field = part['Field']
+    field = part['Fields']
     regex = r"(.* \()"
     result = re.sub(regex, "", field, 0, re.MULTILINE).replace(")","")
     #print (result)
     if (result.startswith('Ec') and not result.startswith('Ec_')):
        result = result.replace("Ec","Ec_")
-    part['Field']=result.lower()
+    part['Fields']=result.lower()
     #print (ALL_PARTS[1])
 
 def writeCSV(all):
@@ -76,17 +85,17 @@ def createBigPartsList():
   PARTS=[]
   currentPart={}
   for part in ALL_PARTS:
-    if (part['Field']=='ec_price'):
+    if (part['Fields']=='ec_price'):
       #this is the last record
-      currentPart[part['Field']]=part['Values']
-      currentPart['Level1']=part['Level1']
-      currentPart['Level2']=part['Level2']
-      currentPart['Level3']=part['Level3']
+      currentPart[part['Fields']]=part['Values']
+      currentPart['Category Level 1']=part['Category Level 1']
+      currentPart['Category Level 2']=part['Category Level 2']
+      currentPart['Category Level 3']=part['Category Level 3']
       #currentPart.append(part)
       PARTS.append(json.dumps(currentPart))
       currentPart={}
     else:
-      currentPart[part['Field']]=part['Values']
+      currentPart[part['Fields']]=part['Values']
 
   #for part in PARTS:
   #  print (part)
@@ -98,9 +107,9 @@ def createPartRecord():
   if (PARTS_POINTER>=len(PARTS)):
     PARTS_POINTER=0
   record = json.loads(PARTS[PARTS_POINTER])
-  print (record)
+  #print (record)
   for key in record.keys():
-    if (';' in record[key]):
+    if (isinstance(record[key], str) and ';' in record[key]):
       #multiple values
       keys = record[key].split(';')
       thekey = random.randint(0, len(keys)-1)
@@ -127,7 +136,7 @@ def removeUnfinishedSentence(text):
   #text bla. bla bla --> remove the last part
   if (not text.endswith('.')):
     if ('.' in text):
-    	text = '.'.join(text.split('.')[:-1])
+      text = '.'.join(text.split('.')[:-1])
   return text
 
 
@@ -208,35 +217,43 @@ def createTextv2(product, keyword, boat, version, sentence, temp, length):
     )
   return line
 
-def getImage(level3, type):
+def getImage(level3,level2, type):
   fileloc = 'images\\'
-  if type:
-    #use that
-    fileloc+=type
+  print(type)
+  #first check if type exists
+  if (type and os.path.exists(fileloc+type)):
+    fileloc = fileloc+type
   else:
-    #use level3
-    fileloc+=level3
+    if (os.path.exists(fileloc+level3)):
+      fileloc = fileloc+level3
+    else:
+      if (os.path.exists(fileloc+level2)):
+        fileloc = fileloc+level2
+  
   try:
-    random_file=random.choice(os.listdir(fileloc))
+    random_file=random.choice(os.listdir(fileloc+'\\Output'))
   except:
     fileloc = 'images\\'
     fileloc+=level3
-    random_file=random.choice(os.listdir(fileloc))
+    random_file=random.choice(os.listdir(fileloc+'\\Output'))
 
   print (fileloc+'\\'+random_file)
   return fileloc+'\\'+random_file
 
-def createRecord(recid, boat):
+def createRecord(recid, boat, version):
   record=[]
   record = createPartRecord()
   productid='prt_'+f'{recid:07}'
   record['permanentid']=productid
-  record['ec_name']=record['Level3']
+  record['ec_name']=record['Category Level 3']
   #Electrical; Electrical|Power Supplies and Charger; Electrical|Power Supplies and Charger|Marine Sonar Panels
-  record['ec_category']=record['Level1']+';'+record['Level1']+'|'+record['Level2']+';'+record['Level1']+'|'+record['Level2']+'|'+record['Level3']
+  record['ec_category']=record['Category Level 1']+';'+record['Category Level 1']+'|'+record['Category Level 2']+';'+record['Category Level 1']+'|'+record['Category Level 2']+'|'+record['Category Level 3']
+  record['ec_boat']=boat
+  record['ec_version']=version
   record['ec_productid']=productid
   record['ec_item_group_id']=''
-  descr = createTextv2('','',boat,'','Create a name to sell: '+record['Level3'],0.6,100)
+  #descr = createTextv2('','',boat,'','Create a name to sell: '+record['Category Level 3'],0.6,100)
+  descr = ""
   record['ec_description']=descr
   #record['ec_brand']=''
   record['ec_sku']=productid
@@ -248,7 +265,7 @@ def createRecord(recid, boat):
   type=''
   if 'prttype' in record:
     type=record['prttype']
-  record['ec_images']=getImage(record['Level3'], type)
+  record['ec_images']=getImage(record['Category Level 3'],record['Category Level 2'], type)
   #record['ec_height']=''
   #record['ec_width']=''
   #record['ec_depth']=''
@@ -279,11 +296,21 @@ def process(filename):
   #versions=['1']  
   boats=['Mercury','Yamaha','Honda','Evinrude','Suzuki','Johnson','Tohatsu','OMC','Chrysler','Force','Mariner','Mercruiser','Mercury','Nissan','Sears']
   all_parts=[]
-  for boat in boats:
-    for version in versions:
-      total = total+1
-      recid = recid+total
-      all_parts.append(createRecord(recid,boat))
+  print("No of parts:")
+  print (len(PARTS))
+  print("No of boats:")
+  print (len(boats))
+  print("No of version:")
+  print (len(versions))
+  #return
+  for part in PARTS:
+    for boat in boats:
+      #version='1'
+      for version in versions:
+        total = total+1
+        recid = recid+total
+        print(total)
+        all_parts.append(createRecord(recid,boat,version))
 
   writeCSV(all_parts)
 
